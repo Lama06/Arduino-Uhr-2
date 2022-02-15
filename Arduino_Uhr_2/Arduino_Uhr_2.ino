@@ -16,7 +16,7 @@ const uint8_t number7 = SEG_A | SEG_B | SEG_C | SEG_F;
 const uint8_t number8 = SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F | SEG_G;
 const uint8_t number9 = SEG_A | SEG_B | SEG_C | SEG_D | SEG_F | SEG_G;
 
-uint8_t numberToSegments(int number) {
+uint8_t numberToSegments(int64_t number) {
   switch (number) {
   case 0: return number0;
   case 1: return number1;
@@ -37,17 +37,20 @@ uint8_t numberToSegments(int number) {
 TM1637Display display(CLOCK_PIN, DATA_IO_PIN);
 
 void ende() {
-  if ((millis() % 2000) > 1000) {
-    uint8_t allEmpty[] = {empty, empty, empty, empty};
-    display.setSegments(allEmpty);
-
-    tone(PIPS_PIN, 100);
-    return;
-  }
-
+  uint8_t allEmpty[] = {empty, empty, empty, empty};
   uint8_t all0[] = {number0, number0, number0, number0};
+  
+  while (true) {
+    display.setSegments(allEmpty);
+    tone(PIPS_PIN, 100);
 
-  noTone(PIPS_PIN);
+    delay(1000);
+
+    display.setSegments(all0);
+    noTone(PIPS_PIN);
+    
+    delay(1000);
+  }
 }
 
 void setup() {
@@ -55,24 +58,23 @@ void setup() {
 }
 
 void loop() {
-  unsigned long millisSinceStart = millis();
-  int secondsSinceStart = millisSinceStart/1000;
+  uint64_t millisSinceStart = millis();
+  int64_t secondsSinceStart = millisSinceStart/1000;
   
-  int remainingSeconds = 90*60 - secondsSinceStart;
+  int64_t remainingSeconds = 90*60 - secondsSinceStart;
   remainingSeconds -= (secondsSinceStart/(3*60+10))*10;
   
   if (remainingSeconds <= 0) {
     ende();
-    return;
   }
   
-  int minutesToDisplay = remainingSeconds/60;
-  int secondsToDisplay = remainingSeconds-(minutesToDisplay*60);
+  int64_t minutesToDisplay = remainingSeconds/60;
+  int64_t secondsToDisplay = remainingSeconds-(minutesToDisplay*60);
 
-  int digit1Number = (minutesToDisplay/10)%10;
-  int digit2Number = minutesToDisplay%10;
-  int digit3Number = (secondsToDisplay/10)%10;
-  int digit4Number = secondsToDisplay%10;
+  int64_t digit1Number = (minutesToDisplay/10)%10;
+  int64_t digit2Number = minutesToDisplay%10;
+  int64_t digit3Number = (secondsToDisplay/10)%10;
+  int64_t digit4Number = secondsToDisplay%10;
 
   uint8_t segments1 = numberToSegments(digit1Number);
   uint8_t segments2 = numberToSegments(digit2Number);
